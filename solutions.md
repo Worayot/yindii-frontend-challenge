@@ -49,7 +49,41 @@ session_, even for screens that were closed long ago. The app gets slower
 and chattier the longer the session. Watch the console logs while browsing
 to see it (every simulated request is logged).
 
+#### Root cause
+
+Each DealDetailsController registers an ever() listener on cartService.items in onInit(). The listener remains active as long as the controller exists.
+
+When navigating away from a deal details screen, the controller was not being disposed, so its ever() listener continued listening to cart changes even though the screen had already been closed.
+
+As more deal pages were opened, more controllers and listeners accumulated. Consequently, adding a deal to the cart triggered _recheckAvailability() for every previously viewed deal, resulting in a burst of GET /deals/:id requests and causing the app to become slower and more network-intensive over time.
+
 #### Solution
+
+Ensure the ever() worker is disposed when the DealDetailsController is disposed.
+
+Store the worker returned by ever() and dispose of it in onClose():
+
+```dart
+late final Worker _cartWorker;
+
+@override
+void onInit() {
+  super.onInit();
+
+  deal = Get.arguments as DealModel;
+  _quantityLeft.value = deal.quantityLeft;
+
+  _cartWorker = ever(cartService.items, (_) => _recheckAvailability());
+}
+
+@override
+void onClose() {
+  _cartWorker.dispose();
+  super.onClose();
+}
+```
+
+This ensures that each deal details controller stops listening to cart changes when it is no longer needed.
 
 ### RES-104 · Duplicate deals in the home feed
 

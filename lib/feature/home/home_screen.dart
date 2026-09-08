@@ -24,8 +24,7 @@ class HomeScreen extends GetView<HomeController> {
             children: [
               Icon(Icons.eco, color: AppConfig.primaryGreen),
               SizedBox(width: 8),
-              Text('Rescu',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+              Text('Rescu', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
             ],
           ),
           actions: [
@@ -51,10 +50,8 @@ class HomeScreen extends GetView<HomeController> {
                 if (value == 'analytics') Get.toNamed(Routes.analyticsDebug);
               },
               itemBuilder: (context) => const [
-                PopupMenuItem(
-                    value: 'deeplink', child: Text('Simulate deep link…')),
-                PopupMenuItem(
-                    value: 'analytics', child: Text('Analytics debug')),
+                PopupMenuItem(value: 'deeplink', child: Text('Simulate deep link…')),
+                PopupMenuItem(value: 'analytics', child: Text('Analytics debug')),
               ],
             ),
           ],
@@ -76,15 +73,12 @@ class HomeScreen extends GetView<HomeController> {
                 child: ListView(
                   controller: controller.scrollController,
                   children: [
-                    if (controller.flashDeals.isNotEmpty)
-                      FlashDealsSection(deals: controller.flashDeals),
+                    if (controller.flashDeals.isNotEmpty) FlashDealsSection(deals: controller.flashDeals),
                     Padding(
                       padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
                       child: Row(
                         children: [
-                          const Text('Nearby deals',
-                              style: TextStyle(
-                                  fontSize: 17, fontWeight: FontWeight.bold)),
+                          const Text('Nearby deals', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
                           const Spacer(),
                           FilterChip(
                             label: const Text('Pickup today'),
@@ -94,8 +88,7 @@ class HomeScreen extends GetView<HomeController> {
                         ],
                       ),
                     ),
-                    ...controller.visibleDeals
-                        .map((deal) => DealCard(deal: deal)),
+                    ...controller.visibleDeals.map((deal) => DealCard(deal: deal)),
                     const SizedBox(height: 24),
                   ],
                 ),
@@ -111,8 +104,7 @@ class HomeScreen extends GetView<HomeController> {
   }
 
   void _showDeepLinkDialog(BuildContext context) {
-    final textController =
-        TextEditingController(text: 'rescu://open/deal?id=42&source=push');
+    final textController = TextEditingController(text: 'rescu://open/deal?id=42&source=push');
     Get.dialog(
       AlertDialog(
         title: const Text('Simulate deep link'),
@@ -129,9 +121,7 @@ class HomeScreen extends GetView<HomeController> {
               final uri = Uri.tryParse(textController.text.trim());
               Get.back();
               if (uri == null) return;
-              final route = uri.hasQuery
-                  ? '${uri.path}?${uri.query}'
-                  : uri.path;
+              final route = uri.hasQuery ? '${uri.path}?${uri.query}' : uri.path;
               Get.toNamed(route);
             },
             child: const Text('Open'),

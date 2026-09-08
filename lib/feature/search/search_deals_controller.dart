@@ -9,28 +9,46 @@ class SearchDealsController extends GetxController {
 
   SearchDealsController({required this.dealRepo});
 
+  final query = ''.obs;
+
   final results = <DealModel>[].obs;
   final isLoading = false.obs;
   final hasSearched = false.obs;
 
-  void onQueryChanged(String query) {
-    _search(query);
+  @override
+  void onInit() {
+    super.onInit();
+
+    debounce(
+      query,
+      (_) => _search(query.value),
+      time: const Duration(milliseconds: 300),
+    );
+  }
+
+  void onQueryChanged(String value) {
+    query.value = value;
   }
 
   Future<void> _search(String query) async {
-    if (query.trim().isEmpty) {
+    final trimmedQuery = query.trim();
+
+    if (trimmedQuery.isEmpty) {
       results.clear();
       hasSearched.value = false;
       return;
     }
+
     isLoading.value = true;
     hasSearched.value = true;
+
     try {
-      final found = await dealRepo.search(query);
+      final found = await dealRepo.search(trimmedQuery);
       results.assignAll(found);
     } catch (e) {
       LogService.error('search failed', e);
+    } finally {
+      isLoading.value = false;
     }
-    isLoading.value = false;
   }
 }

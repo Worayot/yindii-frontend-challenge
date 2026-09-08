@@ -26,14 +26,12 @@ class SearchScreen extends GetView<SearchDealsController> {
         }
         if (!controller.hasSearched.value) {
           return Center(
-            child: Text('Try "sushi", "bakery" or "vegan"',
-                style: TextStyle(color: Colors.grey.shade600)),
+            child: Text('Try "sushi", "bakery" or "vegan"', style: TextStyle(color: Colors.grey.shade600)),
           );
         }
         if (controller.results.isEmpty) {
           return Center(
-            child: Text('No deals found',
-                style: TextStyle(color: Colors.grey.shade600)),
+            child: Text('No deals found', style: TextStyle(color: Colors.grey.shade600)),
           );
         }
         return ListView.builder(

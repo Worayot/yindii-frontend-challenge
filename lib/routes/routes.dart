@@ -25,8 +25,7 @@ abstract class Routes {
   static const analyticsDebug = '/debug/analytics';
 
   /// Deep links look like: rescu://open/deal?id=42&source=push
-  static String dealRoute(int id, {String source = 'unknown'}) =>
-      '$deal?id=$id&source=$source';
+  static String dealRoute(int id, {String source = 'unknown'}) => '$deal?id=$id&source=$source';
 
   static final pages = <GetPage<dynamic>>[
     GetPage(

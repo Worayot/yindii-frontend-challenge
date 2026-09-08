@@ -31,7 +31,13 @@ Open **My orders** while there is an order with an upcoming pickup, then
 navigate back. Within a couple of seconds the app crashes in debug builds with
 `setState() called after dispose()`.
 
+#### Root cause
+
+Timer.periodic continues running independently of the widget's lifecycle. If the timer isn't cancelled when the widget is disposed, its callback can continue firing and attempt to call setState() after the widget has been disposed.
+
 #### Solution
+
+Store the Timer instance in a variable so it can be cancelled in the dispose() method. `if (mounted)` prevents the setState() called after dispose() exception, while `timer.cancel()` properly stops the timer from continuing to fire.
 
 ### RES-103 · Requests pile up the longer you browse
 

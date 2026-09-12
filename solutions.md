@@ -93,7 +93,17 @@ Scroll to the bottom of the home feed so the next page starts loading, then
 quickly pull down to refresh while it is still loading. Intermittently the
 feed ends up with duplicated cards, or more items than the catalog contains.
 
+#### Root cause
+
+refreshDeals() and loadMore() can execute concurrently. If a pagination request is still loading when the user pulls to refresh, the refresh resets _page and replaces the feed while the older loadMore() request is still in flight.
+
+When the older pagination request completes, it can append its stale page of results to the newly refreshed feed. This race condition can result in duplicated cards or more items than the catalog contains.
+
 #### Solution
+
+Track the state of each feed request and ignore pagination responses that were started before a refresh.
+
+Also calculate the next page in a local variable and update _page only after the request succeeds. This prevents an in-flight request from modifying the current pagination state after a refresh has reset it.
 
 ### RES-105 · Home feed is janky and memory keeps climbing
 
@@ -105,6 +115,8 @@ DevTools shows the entire feed rebuilding continuously during scroll, and the
 image cache ballooning. There is more than one contributing cause — we expect
 you to find and explain them, with before/after evidence from DevTools
 (screenshots or numbers in `solutions.md`).
+
+#### Root cause
 
 #### Solution
 

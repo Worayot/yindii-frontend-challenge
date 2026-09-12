@@ -207,7 +207,31 @@ Requirement: the link must land the user on a fully working deal page (deal
 42 exists in the catalog). Showing an error/fallback screen instead is not an
 acceptable resolution for this ticket.
 
+#### Root cause
+
+The deal details screen expected a DealModel to be provided through Get.arguments:
+
+deal = Get.arguments as DealModel;
+
+Home navigation passes the DealModel, so this works.
+
+However, the deep link only provides the deal ID:
+
+id=42
+
+It does not provide a DealModel, causing Get.arguments to be null and the cast to fail.
+
 #### Solution
+
+Support deep-link navigation by loading the deal from its ID:
+
+- Extract the id parameter from the deep link.
+- Fetch the deal using dealRepo.fetchById(dealId).
+- Store the fetched DealModel in the controller.
+- Show a loading state while the deal is being fetched.
+- Build the normal deal details page after the deal has loaded.
+
+The deal details page no longer depends on Get.arguments containing a DealModel.
 
 ---
 

@@ -118,10 +118,25 @@ you to find and explain them, with before/after evidence from DevTools
 
 #### Root cause
 
-- Everytime user scrolls, it's rebuilding entire home screen.
-- The deal cards are not built using lazy builder.
+- scrollOffset was observed by a top-level Obx, causing the entire Home screen to rebuild on every scroll event.
+- Deal cards were eagerly built instead of using lazy list construction.
+- Image cache growth was investigated separately using DevTools.
 
 #### Solution
+
+- Reduced the Obx scope so scrollOffset only rebuilds the AppBar and FAB.
+- Changed the deal feed to ListView.builder for lazy construction.
+- Compared memory and frame performance before and after the changes.
+
+The Home feed now avoids rebuilding the entire screen during scrolling and only builds deal cards as needed. DevTools shows improved scrolling performance and reduced unnecessary work.
+
+##### Before fix
+
+![RES-105 after](images_md/RES-105-before.png)
+
+##### After fix
+
+![RES-105 after](images_md/RES-105-after.png)
 
 ### RES-106 · Wrong pickup times; "Pickup today" filter misses deals
 

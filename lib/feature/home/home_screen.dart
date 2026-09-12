@@ -15,7 +15,6 @@ class HomeScreen extends GetView<HomeController> {
   @override
   Widget build(BuildContext context) {
     final offset = controller.scrollOffset.value;
-    debugPrint("Home loaded");
     return Scaffold(
       appBar: AppBar(
         elevation: offset > 4 ? 2 : 0,

@@ -118,6 +118,9 @@ you to find and explain them, with before/after evidence from DevTools
 
 #### Root cause
 
+- Everytime user scrolls, it's rebuilding entire home screen.
+- The deal cards are not built using lazy builder.
+
 #### Solution
 
 ### RES-106 · Wrong pickup times; "Pickup today" filter misses deals

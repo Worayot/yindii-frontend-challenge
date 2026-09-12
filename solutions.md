@@ -149,7 +149,50 @@ up at closed stores. The backend team insists their data is correct and
 points out the API sends standard ISO-8601 UTC instants, like every API we
 integrate with.
 
+#### Root cause
+
+The API sends pickup times as UTC ISO-8601 instants. DateTime.parse() preserves the UTC timezone when parsing values such as 2026-09-12T23:00:00Z.
+
+The model was using these UTC values directly for:
+
+Displaying the pickup time.
+Checking whether the pickup starts today.
+Checking the current pickup availability.
+
+As a result, the UI compared and displayed UTC times instead of the user's local time.
+
+Additionally, isToday only compared the day number, which could incorrectly match dates from different months or years.
+
 #### Solution
+
+Convert the API timestamps to local time when creating the model:
+
+```dart
+start: DateTime.parse(json['start'] as String? ?? '').toLocal(),
+end: DateTime.parse(json['end'] as String? ?? '').toLocal(),
+```
+
+Update isToday to compare the complete local date:
+
+```dart
+bool get isToday {
+  final now = DateTime.now();
+
+  return start.year == now.year &&
+      start.month == now.month &&
+      start.day == now.day;
+}
+```
+
+isOpenNow can continue using the local DateTime values:
+
+```dart
+bool get isOpenNow {
+  final now = DateTime.now();
+
+  return now.isAfter(start) && now.isBefore(end);
+}
+```
 
 ### RES-107 · Deep link opens to a crash
 

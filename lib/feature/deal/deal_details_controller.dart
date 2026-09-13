@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 
 import '../../model/deal_model.dart';
@@ -28,10 +29,12 @@ class DealDetailsController extends GetxController {
 
   final countdown = '--:--'.obs;
   Timer? _timer;
-  bool get isFlashSale => deal.value?.flashSaleEndsAt != null;
-  bool get isFlashSaleExpired => isFlashSale && !(deal.value?.flashSaleEndsAt?.isAfter(DateTime.now()) ?? false);
 
-  bool get canAddToBag => !isFlashSaleExpired && (deal.value?.quantityLeft ?? 0) > 0;
+  final flashSaleExpired = false.obs;
+
+  bool get isFlashSale => deal.value?.flashSaleEndsAt != null;
+  bool get isFlashSaleExpired => isFlashSale && flashSaleExpired.value;
+  bool get canAddToBag => !isFlashSaleExpired && (_quantityLeft.value ?? 0) > 0;
 
   @override
   void onInit() {
@@ -48,9 +51,11 @@ class DealDetailsController extends GetxController {
   }
 
   void _updateCountdown() {
-    final endsAt = deal.value?.flashSaleEndsAt;
+    final currentDeal = deal.value;
+    final endsAt = currentDeal?.flashSaleEndsAt;
 
-    if (endsAt == null) {
+    if (currentDeal == null || endsAt == null) {
+      flashSaleExpired.value = false;
       countdown.value = '--:--';
       return;
     }
@@ -58,19 +63,29 @@ class DealDetailsController extends GetxController {
     final remaining = endsAt.difference(DateTime.now());
 
     if (remaining <= Duration.zero) {
+      flashSaleExpired.value = true;
       countdown.value = '00:00';
       _timer?.cancel();
-      cartService.remove(deal.value!.id);
 
-      Get.snackbar(
-        'Flash sale ended',
-        '${deal.value!.name} has been removed from your bag.',
-        snackPosition: SnackPosition.BOTTOM,
-        duration: const Duration(seconds: 2),
-      );
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (isClosed) return;
+
+        if (!cartService.existById(currentDeal.id)) return;
+
+        cartService.remove(currentDeal.id);
+
+        Get.snackbar(
+          'Flash sale ended',
+          '${currentDeal.name} has been removed from your bag.',
+          snackPosition: SnackPosition.BOTTOM,
+          duration: const Duration(seconds: 2),
+        );
+      });
 
       return;
     }
+
+    flashSaleExpired.value = false;
 
     final hours = remaining.inHours;
     final minutes = remaining.inMinutes.remainder(60);
@@ -123,11 +138,16 @@ class DealDetailsController extends GetxController {
     final endsAt = deal.flashSaleEndsAt;
 
     if (endsAt == null) {
+      flashSaleExpired.value = false;
       countdown.value = '--:--';
       return;
     }
 
     _updateCountdown();
+
+    if (flashSaleExpired.value) {
+      return;
+    }
 
     _timer?.cancel();
     _timer = Timer.periodic(

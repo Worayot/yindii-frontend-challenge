@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rescu/feature/home/widget/flash_deal_card.dart';
+import 'package:rescu/model/pickup_window_model.dart';
 import '../../../model/deal_model.dart';
 
 /// Horizontal flash-sale rail.
@@ -13,6 +14,27 @@ class FlashDealsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final dealss = [
+      DealModel(
+          id: 0,
+          name: 'Dummy',
+          description: '',
+          imageUrl: '',
+          originalPrice: 100,
+          price: 80,
+          currencyCode: '',
+          quantityLeft: 2,
+          storeId: 2,
+          storeName: '',
+          storeAddress: '',
+          lat: 2,
+          lng: 2,
+          rating: 2,
+          tags: [],
+          pickupWindow: PickupWindowModel(start: DateTime.now(), end: DateTime.now()),
+          flashSaleEndsAt: DateTime.now().add(Duration(seconds: 10))),
+      ...deals
+    ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -31,9 +53,9 @@ class FlashDealsSection extends StatelessWidget {
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 12),
-            itemCount: deals.length,
+            itemCount: dealss.length,
             itemBuilder: (context, index) {
-              final deal = deals[index];
+              final deal = dealss[index];
               return FlashDealCard(
                 deal: deal,
               );

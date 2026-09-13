@@ -54,4 +54,6 @@ class CartService extends GetxService {
   void _recount() {
     itemCount.value = items.fold(0, (sum, i) => sum + i.quantity);
   }
+
+  bool existById(int dealId) => items.firstWhereOrNull((i) => i.deal.id == dealId) != null;
 }

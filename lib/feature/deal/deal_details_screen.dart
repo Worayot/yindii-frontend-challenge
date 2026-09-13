@@ -29,7 +29,6 @@ class DealDetailsScreen extends GetView<DealDetailsController> {
       }
 
       final isFlashSale = controller.isFlashSale;
-      final canAddToBag = controller.canAddToBag;
 
       return Scaffold(
         body: CustomScrollView(
@@ -130,21 +129,23 @@ class DealDetailsScreen extends GetView<DealDetailsController> {
             ),
           ],
         ),
-        bottomSheet: Container(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-          color: Colors.white,
-          child: SizedBox(
-            width: double.infinity,
-            child: FilledButton.icon(
-              onPressed: canAddToBag ? controller.addToCart : null,
-              style: canAddToBag
-                  ? null
-                  : FilledButton.styleFrom(
-                      disabledBackgroundColor: Colors.grey.shade300,
-                      disabledForegroundColor: Colors.grey.shade600,
-                    ),
-              icon: const Icon(Icons.add_shopping_cart),
-              label: const Text('Add to bag'),
+        bottomSheet: Obx(
+          () => Container(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+            color: Colors.white,
+            child: SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: controller.canAddToBag ? controller.addToCart : null,
+                style: controller.canAddToBag
+                    ? null
+                    : FilledButton.styleFrom(
+                        disabledBackgroundColor: Colors.grey.shade300,
+                        disabledForegroundColor: Colors.grey.shade600,
+                      ),
+                icon: const Icon(Icons.add_shopping_cart),
+                label: const Text('Add to bag'),
+              ),
             ),
           ),
         ),

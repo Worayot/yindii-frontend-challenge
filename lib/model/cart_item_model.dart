@@ -1,3 +1,5 @@
+import 'package:rescu/model/reservation_status.dart';
+
 import 'deal_model.dart';
 import 'reservation_model.dart';
 
@@ -9,7 +11,16 @@ class CartItemModel {
   /// see the "Reservations" feature task.
   ReservationModel? reservation;
 
-  CartItemModel({required this.deal, this.quantity = 1, this.reservation});
+  ReservationStatus reservationStatus;
+  int reservationOperationVersion;
+
+  CartItemModel({
+    required this.deal,
+    this.quantity = 1,
+    this.reservation,
+    this.reservationStatus = ReservationStatus.none,
+    this.reservationOperationVersion = 0,
+  });
 
   num get lineTotal => deal.price * quantity;
 }

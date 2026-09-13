@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 
 import '../../model/deal_model.dart';
@@ -65,22 +64,8 @@ class DealDetailsController extends GetxController {
     if (remaining <= Duration.zero) {
       flashSaleExpired.value = true;
       countdown.value = '00:00';
+
       _timer?.cancel();
-
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (isClosed) return;
-
-        if (!cartService.existById(currentDeal.id)) return;
-
-        cartService.remove(currentDeal.id);
-
-        Get.snackbar(
-          'Flash sale ended',
-          '${currentDeal.name} has been removed from your bag.',
-          snackPosition: SnackPosition.BOTTOM,
-          duration: const Duration(seconds: 2),
-        );
-      });
 
       return;
     }
@@ -177,18 +162,57 @@ class DealDetailsController extends GetxController {
     _quantityLeft.value = fresh.quantityLeft;
   }
 
-  void addToCart() {
+  Future<void> addToCart() async {
     final currentDeal = deal.value;
 
     if (currentDeal == null) return;
 
-    cartService.add(currentDeal);
+    try {
+      final result = await cartService.add(currentDeal);
 
-    Get.snackbar(
-      'Added to bag',
-      '${currentDeal.name} — pick up ${currentDeal.pickupWindow.label}',
-      snackPosition: SnackPosition.BOTTOM,
-      duration: const Duration(seconds: 2),
-    );
+      if (result.success) {
+        Get.snackbar(
+          'Added to bag',
+          '${currentDeal.name} — pick up ${currentDeal.pickupWindow.label}',
+          snackPosition: SnackPosition.BOTTOM,
+          duration: const Duration(seconds: 2),
+        );
+        return;
+      }
+
+      String message;
+
+      switch (result.statusCode) {
+        case 409:
+          message = 'Someone else got this deal first. Please try another one.';
+          break;
+
+        case 410:
+          message = 'This deal is no longer available.';
+          break;
+
+        default:
+          message = result.message ?? 'Could not reserve this deal. Please try again.';
+      }
+
+      Get.snackbar(
+        'Could not add to bag',
+        message,
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 2),
+      );
+    } catch (e) {
+      LogService.error(
+        'add to cart failed',
+        e,
+      );
+
+      Get.snackbar(
+        'Process failed',
+        'Something went wrong. Please try again.',
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 2),
+      );
+    }
   }
 }

@@ -19,11 +19,41 @@ Future<void> main() async {
 }
 
 Future<void> initDependencies() async {
-  await Get.putAsync(() => FakeApiService().init(), permanent: true);
-  Get.put(AnalyticsService(), permanent: true);
-  Get.put(CartService(), permanent: true);
+  await Get.putAsync(
+    () => FakeApiService().init(),
+    permanent: true,
+  );
+
   Get.put<AnalyticsService>(
     AnalyticsService(),
+    permanent: true,
+  );
+
+  Get.lazyPut<DealRepo>(
+    () => DealRepo(
+      api: Get.find<FakeApiService>(),
+    ),
+    fenix: true,
+  );
+
+  Get.lazyPut<StoreRepo>(
+    () => StoreRepo(
+      api: Get.find<FakeApiService>(),
+    ),
+    fenix: true,
+  );
+
+  Get.lazyPut<OrderRepo>(
+    () => OrderRepo(
+      api: Get.find<FakeApiService>(),
+    ),
+    fenix: true,
+  );
+
+  Get.put<CartService>(
+    CartService(
+      orderRepo: Get.find<OrderRepo>(),
+    ),
     permanent: true,
   );
 
@@ -41,9 +71,6 @@ Future<void> initDependencies() async {
     ),
     permanent: true,
   );
-  Get.lazyPut(() => DealRepo(api: Get.find()), fenix: true);
-  Get.lazyPut(() => StoreRepo(api: Get.find()), fenix: true);
-  Get.lazyPut(() => OrderRepo(api: Get.find()), fenix: true);
 }
 
 class RescuApp extends StatelessWidget {

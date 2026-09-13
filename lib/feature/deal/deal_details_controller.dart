@@ -29,6 +29,8 @@ class DealDetailsController extends GetxController {
   final countdown = '--:--'.obs;
   Timer? _timer;
   bool get isFlashSale => deal.value?.flashSaleEndsAt != null;
+  bool get isFlashSaleExpired => isFlashSale && countdown.value == '00:00';
+  bool get canAddToBag => !isFlashSaleExpired && (deal.value?.quantityLeft ?? 0) > 0;
 
   @override
   void onInit() {
@@ -57,6 +59,15 @@ class DealDetailsController extends GetxController {
     if (remaining <= Duration.zero) {
       countdown.value = '00:00';
       _timer?.cancel();
+      cartService.remove(deal.value!.id);
+
+      Get.snackbar(
+        'Flash sale ended',
+        '${deal.value!.name} has been removed from your bag.',
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 2),
+      );
+
       return;
     }
 

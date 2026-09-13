@@ -223,16 +223,19 @@ It does not provide a DealModel, causing Get.arguments to be null and the cast t
 
 #### Solution
 
-Support deep-link navigation by loading the deal from its ID:
+Support both navigation sources without unnecessary network requests:
 
-- Extract the id parameter from the deep link.
-- Fetch the deal using dealRepo.fetchById(dealId).
-- Store the fetched DealModel in the controller.
-- Show a loading state while the deal is being fetched.
-- Build the normal deal details page after the deal has loaded.
+Check Get.arguments for an existing DealModel.
+If a DealModel is provided from the Home page, use it directly without fetching the deal again.
+If no DealModel is provided, treat the navigation as a deep link.
+Extract the id parameter from the deep link.
+Fetch the deal using dealRepo.fetchById(dealId).
+Store the loaded DealModel in the controller.
+Show a loading state while a deep-linked deal is being fetched.
+Build the normal deal details page after the deal has loaded.
+Dispose the cart worker when the details controller is closed to prevent closed deal pages from continuing to trigger availability requests.
 
-The deal details page no longer depends on Get.arguments containing a DealModel.
-
+The deal details page can therefore be opened from either the Home page or a deep link while avoiding an unnecessary initial fetch when the DealModel is already available
 ---
 
 ## Part B — Features

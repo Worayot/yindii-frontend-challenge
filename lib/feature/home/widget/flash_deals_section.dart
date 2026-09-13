@@ -13,13 +13,6 @@ class FlashDealsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final activeDeals = deals.where((deal) {
-      final endsAt = deal.flashSaleEndsAt;
-      return endsAt != null && endsAt.isAfter(DateTime.now());
-    }).toList();
-
-    final hasFlashDeal = activeDeals.isNotEmpty;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -33,21 +26,20 @@ class FlashDealsSection extends StatelessWidget {
             ],
           ),
         ),
-        if (hasFlashDeal)
-          SizedBox(
-            height: 190,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              itemCount: activeDeals.length,
-              itemBuilder: (context, index) {
-                final deal = activeDeals[index];
-                return FlashDealCard(
-                  deal: deal,
-                );
-              },
-            ),
+        SizedBox(
+          height: 190,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            itemCount: deals.length,
+            itemBuilder: (context, index) {
+              final deal = deals[index];
+              return FlashDealCard(
+                deal: deal,
+              );
+            },
           ),
+        ),
       ],
     );
   }

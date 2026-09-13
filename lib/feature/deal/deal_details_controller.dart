@@ -29,7 +29,8 @@ class DealDetailsController extends GetxController {
   final countdown = '--:--'.obs;
   Timer? _timer;
   bool get isFlashSale => deal.value?.flashSaleEndsAt != null;
-  bool get isFlashSaleExpired => isFlashSale && countdown.value == '00:00';
+  bool get isFlashSaleExpired => isFlashSale && !(deal.value?.flashSaleEndsAt?.isAfter(DateTime.now()) ?? false);
+
   bool get canAddToBag => !isFlashSaleExpired && (deal.value?.quantityLeft ?? 0) > 0;
 
   @override

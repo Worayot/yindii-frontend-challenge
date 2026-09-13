@@ -291,3 +291,14 @@ Build reservation support into the bag:
   expires while the user is still in the app (or mid-checkout)? Decide the
   product behaviour yourself, implement it, and justify the decision in
   `solutions.md`. There is no single right answer — there are wrong ones.
+
+Q1: In this codebase, what is the difference between a `GetxController`'s
+     lifecycle and a widget `State`'s lifecycle? Name one bug from Part A
+     that exists because of confusion between the two.
+
+Q2: When does wrapping a large subtree in a single `Obx` hurt you? How
+     do you decide how tightly to scope reactivity?
+
+Q3: How would you write an automated test that would have caught
+     RES-106 before release? What (if anything) would you change in the code
+     to make such a test possible?

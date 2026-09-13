@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:rescu/service/analytics_batch_service.dart';
+import 'package:rescu/service/analytics_impression_service.dart';
 
 import 'app_config.dart';
 import 'repository/deal_repo.dart';
@@ -20,6 +22,25 @@ Future<void> initDependencies() async {
   await Get.putAsync(() => FakeApiService().init(), permanent: true);
   Get.put(AnalyticsService(), permanent: true);
   Get.put(CartService(), permanent: true);
+  Get.put<AnalyticsService>(
+    AnalyticsService(),
+    permanent: true,
+  );
+
+  Get.put<AnalyticsImpressionService>(
+    AnalyticsImpressionService(
+      analytics: Get.find<AnalyticsService>(),
+    ),
+    permanent: true,
+  );
+
+  Get.put<AnalyticsBatchService>(
+    AnalyticsBatchService(
+      analytics: Get.find<AnalyticsService>(),
+      api: Get.find<FakeApiService>(),
+    ),
+    permanent: true,
+  );
   Get.lazyPut(() => DealRepo(api: Get.find()), fenix: true);
   Get.lazyPut(() => StoreRepo(api: Get.find()), fenix: true);
   Get.lazyPut(() => OrderRepo(api: Get.find()), fenix: true);

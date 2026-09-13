@@ -111,6 +111,7 @@ class HomeScreen extends GetView<HomeController> {
 
                     return DealCard(
                       deal: controller.visibleDeals[dealIndex],
+                      position: index,
                     );
                   },
                 )),

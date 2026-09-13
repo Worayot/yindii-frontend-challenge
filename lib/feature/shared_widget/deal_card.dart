@@ -19,7 +19,8 @@ class DealCard extends StatefulWidget {
   const DealCard({
     super.key,
     required this.deal,
-    this.source = 'home',
+    required this.source,
+    // this.source = 'home',
     required this.position,
   });
 

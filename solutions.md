@@ -2,6 +2,9 @@
 
 For AI tool, I used free tier chatGPT from chatgpt.com for this project.
 
+[Part 1](https://chatgpt.com/share/6aa6b742-ce80-83ec-ae08-99edf794d836)
+[part 2](https://chatgpt.com/share/6aa6b775-63fc-83ec-9f0b-9247f88b305d)
+
 ## Part A — Bug tickets
 
 ### RES-101 · Search shows results for the wrong query

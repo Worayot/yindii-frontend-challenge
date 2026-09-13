@@ -51,10 +51,20 @@ class HomeController extends GetxController {
 
     _flashDealTimer = Timer.periodic(
       const Duration(seconds: 1),
-      (_) {
-        flashDealTick.value++;
-      },
+      (_) => _onFlashDealTick(),
     );
+  }
+
+  void _onFlashDealTick() {
+    final now = DateTime.now();
+
+    flashDeals.removeWhere((deal) {
+      final endsAt = deal.flashSaleEndsAt;
+
+      return endsAt == null || !endsAt.isAfter(now);
+    });
+
+    flashDealTick.value++;
   }
 
   Future<void> _initialLoad() async {

@@ -6,18 +6,18 @@ For AI tool, I used free tier chatGPT from chatgpt.com for this project.
 
 ### RES-101 · Search shows results for the wrong query
 
-#### Problem
+#### RES-101 Problem
 
 Type a word quickly in search — for example "sushi", letter by letter.
 Frequently the final results do not match what is in the text box: correct
 results appear briefly, then get replaced by results for an earlier, shorter
 query. Team reproduces this most attempts. Users report "search is drunk".
 
-#### Root cause
+#### RES-101 Root cause
 
 Function ```Future<void> _search(String query)``` in lib/feature/search/search_deals_controller.dart returns the query with the slowest response time, caused by multiple async searches at the same time.
 
-#### Solution
+#### RES-101 Solution
 
 This can be fixed with adding a string variable `lastQuery` and compare if the current query and lastQuery is the same, it will trigger api call, otherwise it will not, which will ignore response if a newer search has happened.
 
@@ -25,23 +25,23 @@ But with this implementation, every time a character entered in the search bar, 
 
 ### RES-102 · Crash after leaving My orders
 
-#### Problem
+#### RES-102 Problem
 
 Open **My orders** while there is an order with an upcoming pickup, then
 navigate back. Within a couple of seconds the app crashes in debug builds with
 `setState() called after dispose()`.
 
-#### Root cause
+#### RES-102 Root cause
 
 Timer.periodic continues running independently of the widget's lifecycle. If the timer isn't cancelled when the widget is disposed, its callback can continue firing and attempt to call setState() after the widget has been disposed.
 
-#### Solution
+#### RES-102 Solution
 
 Store the Timer instance in a variable so it can be cancelled in the dispose() method. `if (mounted)` prevents the setState() called after dispose() exception, while `timer.cancel()` properly stops the timer from continuing to fire.
 
 ### RES-103 · Requests pile up the longer you browse
 
-#### Problem
+#### RES-103 Problem
 
 After opening several deal pages, every tap on "Add to bag" triggers a burst
 of `GET /deals/:id` requests — one for _each deal viewed earlier in the
@@ -49,7 +49,7 @@ session_, even for screens that were closed long ago. The app gets slower
 and chattier the longer the session. Watch the console logs while browsing
 to see it (every simulated request is logged).
 
-#### Root cause
+#### RES-103 Root cause
 
 Each DealDetailsController registers an ever() listener on cartService.items in onInit(). The listener remains active as long as the controller exists.
 
@@ -57,7 +57,7 @@ When navigating away from a deal details screen, the controller was not being di
 
 As more deal pages were opened, more controllers and listeners accumulated. Consequently, adding a deal to the cart triggered _recheckAvailability() for every previously viewed deal, resulting in a burst of GET /deals/:id requests and causing the app to become slower and more network-intensive over time.
 
-#### Solution
+#### RES-103 Solution
 
 Ensure the ever() worker is disposed when the DealDetailsController is disposed.
 
@@ -87,19 +87,19 @@ This ensures that each deal details controller stops listening to cart changes w
 
 ### RES-104 · Duplicate deals in the home feed
 
-#### Problem
+#### RES-104 Problem
 
 Scroll to the bottom of the home feed so the next page starts loading, then
 quickly pull down to refresh while it is still loading. Intermittently the
 feed ends up with duplicated cards, or more items than the catalog contains.
 
-#### Root cause
+#### RES-104 Root cause
 
 refreshDeals() and loadMore() can execute concurrently. If a pagination request is still loading when the user pulls to refresh, the refresh resets _page and replaces the feed while the older loadMore() request is still in flight.
 
 When the older pagination request completes, it can append its stale page of results to the newly refreshed feed. This race condition can result in duplicated cards or more items than the catalog contains.
 
-#### Solution
+#### RES-104 Solution
 
 Track the state of each feed request and ignore pagination responses that were started before a refresh.
 
@@ -107,7 +107,7 @@ Also calculate the next page in a local variable and update _page only after the
 
 ### RES-105 · Home feed is janky and memory keeps climbing
 
-#### Problem
+#### RES-105 Problem
 
 On mid-range Android devices the home feed drops frames noticeably while
 scrolling, and memory grows the further you scroll until the OS kills the app.
@@ -116,13 +116,13 @@ image cache ballooning. There is more than one contributing cause — we expect
 you to find and explain them, with before/after evidence from DevTools
 (screenshots or numbers in `solutions.md`).
 
-#### Root cause
+#### RES-105 Root cause
 
 - scrollOffset was observed by a top-level Obx, causing the entire Home screen to rebuild on every scroll event.
 - Deal cards were eagerly built instead of using lazy list construction.
 - Image cache growth was investigated separately using DevTools.
 
-#### Solution
+#### RES-105 Solution
 
 - Reduced the Obx scope so scrollOffset only rebuilds the AppBar and FAB.
 - Changed the deal feed to ListView.builder for lazy construction.
@@ -140,7 +140,7 @@ The Home feed now avoids rebuilding the entire screen during scrolling and only 
 
 ### RES-106 · Wrong pickup times; "Pickup today" filter misses deals
 
-#### Problem
+#### RES-106 Problem
 
 Multiple user complaints: a bakery that opens **06:00–09:30** shows
 "Pick up 23:00 – 02:30" on its cards, and several stores with pickup slots
@@ -149,7 +149,7 @@ up at closed stores. The backend team insists their data is correct and
 points out the API sends standard ISO-8601 UTC instants, like every API we
 integrate with.
 
-#### Root cause
+#### RES-106 Root cause
 
 The API sends pickup times as UTC ISO-8601 instants. DateTime.parse() preserves the UTC timezone when parsing values such as 2026-09-12T23:00:00Z.
 
@@ -163,7 +163,7 @@ As a result, the UI compared and displayed UTC times instead of the user's local
 
 Additionally, isToday only compared the day number, which could incorrectly match dates from different months or years.
 
-#### Solution
+#### RES-106 Solution
 
 Convert the API timestamps to local time when creating the model:
 
@@ -196,7 +196,7 @@ bool get isOpenNow {
 
 ### RES-107 · Deep link opens to a crash
 
-#### Problem
+#### RES-107 Problem
 
 Marketing sends push notifications that deep-link to deals, e.g.
 `rescu://open/deal?id=42&source=push`. Opening such a link crashes with
@@ -207,7 +207,7 @@ Requirement: the link must land the user on a fully working deal page (deal
 42 exists in the catalog). Showing an error/fallback screen instead is not an
 acceptable resolution for this ticket.
 
-#### Root cause
+#### RES-107 Root cause
 
 The deal details screen expected a DealModel to be provided through Get.arguments:
 
@@ -221,7 +221,7 @@ id=42
 
 It does not provide a DealModel, causing Get.arguments to be null and the cast to fail.
 
-#### Solution
+#### RES-107 Solution
 
 Check Get.arguments for an existing DealModel.
 If a DealModel is provided from the Home page, use it directly without fetching the deal again.
@@ -313,42 +313,63 @@ Product wants view analytics on deal cards. Using `AnalyticsService`:
 
 #### F-2 Implementation
 
-Impression tracking is implemented using three responsibilities:
+Impression tracking is implemented by separating visibility detection, impression deduplication, and event delivery.
 
-Deal cards
-    ↓
-visibility qualification
+The flow is:
 
-AnalyticsImpressionService
-    ↓
-session-level deduplication
+Deal cards → Visibility qualification → AnalyticsImpressionService → Session-level deduplication → AnalyticsBatchService → Event batching and delivery
 
-AnalyticsBatchService
-    ↓
-event batching and delivery
-Visibility qualification
+##### Visibility qualification
 
-DealCard and FlashDealCard use VisibilityDetector to determine how much of the card is visible.
+`DealCard` and `FlashDealCard` use `VisibilityDetector` to determine how much of each card is currently visible.
 
-When the card reaches at least 50% visibility, a one-shot 1-second timer starts.
+An impression is only recorded when a deal card meets both visibility and duration requirements.
 
-If visibility falls below 50% before the timer completes, the timer is cancelled.
+The visibility flow is:
 
-Therefore, the impression is only recorded when the card remains continuously visible for the required duration.
+1. When the card is below 50% visible, no impression timer is running.
+2. When the card reaches at least 50% visibility, a one-shot 1-second timer starts.
+3. If the card remains at least 50% visible for the full second, the impression is recorded.
+4. If visibility drops below 50% before the timer completes, the timer is cancelled.
+5. The impression is therefore only recorded after the card has remained continuously visible for the required duration.
 
-< 50%
-  ↓
-no timer
+##### Session-level deduplication
 
->= 50%
-  ↓
-start 1-second timer
-  ↓
-still >= 50%
-  ↓
-record impression
+After an impression qualifies, `AnalyticsImpressionService` handles session-level deduplication.
 
-The visibility callback performs only lightweight timer/state operations. It does not perform network requests or trigger widget rebuilds.
+The same deal should not generate repeated impression events during the same session simply because the user scrolls away and later brings the card back into view.
+
+The deduplication flow is:
+
+1. A qualified impression is sent to `AnalyticsImpressionService`.
+2. The service checks whether the deal has already been recorded during the current session.
+3. If it has already been recorded, the event is ignored.
+4. Otherwise, the deal is added to the session-level impression set and the analytics event is passed to `AnalyticsBatchService`.
+
+This keeps visibility detection separate from analytics delivery and prevents duplicate impression events.
+
+#### Event batching and delivery
+
+`AnalyticsBatchService` is responsible for collecting impression events and delivering them in batches.
+
+The visibility system does not make a network request every time a card becomes visible. Instead, qualified and deduplicated events are passed to the batching service.
+
+This reduces unnecessary network requests while allowing impression events to be delivered efficiently.
+
+##### Visibility callback responsibilities
+
+The `VisibilityDetector` callback is intentionally kept lightweight.
+
+It only performs visibility-related state and timer operations. It does not:
+
+- Make network requests.
+- Perform analytics delivery directly.
+- Trigger unnecessary widget rebuilds.
+- Perform expensive processing.
+
+Network communication is handled separately by `AnalyticsBatchService`.
+
+This separation keeps the card widgets responsive and prevents scrolling through a list of deals from generating excessive network activity.
 
 ### F-3 · Stock reservations with optimistic UI
 
@@ -372,146 +393,32 @@ Build reservation support into the bag:
   product behaviour yourself, implement it, and justify the decision in
   `solutions.md`. There is no single right answer — there are wrong ones.
 
-_ReservationStatus(...)
-
-If the error comes back, we've isolated it to _ReservationStatus and its reactive rebuild rather than the Column itself.
-
-So I wouldn't conclude that Column is inherently the problem. More likely, the Column creates the layout boundary in which the changing _ReservationStatus exposes the issue.
-
-#### F-2 Implementation
-
-Impression tracking is implemented using three responsibilities:
-
-Deal cards
-
-↓
-
-visibility qualification
-
-AnalyticsImpressionService
-
-↓
-
-session-level deduplication
-
-AnalyticsBatchService
-
-↓
-
-event batching and delivery
-
-Visibility qualification
-
-DealCard and FlashDealCard use VisibilityDetector to determine how much of the card is visible.
-
-When the card reaches at least 50% visibility, a one-shot 1-second timer starts.
-
-If visibility falls below 50% before the timer completes, the timer is cancelled.
-
-Therefore, the impression is only recorded when the card remains continuously visible for the required duration.
-
-< 50%
-
-↓
-
-no timer
-
->= 50%
-
-↓
-
-start 1-second timer
-
-↓
-
-still >= 50%
-
-↓
-
-record impression
-
-The visibility callback performs only lightweight timer/state operations. It does not perform network requests or trigger widget rebuilds.
-
-### F-3 · Stock reservations with optimistic UI
-
-Right now the bag is purely local, so two users can "add" the last bag and
-
-one of them finds out only at pickup. The backend already exposes
-
-reservations (see `FakeApiService.reserveDeal` / `releaseReservation`, and
-
-`reservationId` on checkout): a reservation holds stock for **5 minutes** and
-
-intermittently fails with a 409 when stock is contended.
-
-Build reservation support into the bag:
-
-- Adding to the bag reserves stock. The UI must respond **optimistically**
-
-(instant feedback), then reconcile: if the reservation fails, the item is
-
-rolled back out of the bag with a clear, non-technical message.
-
-- Each bag line shows how long its reservation has left.
-
-- Removing a line (or reducing quantity) releases/adjusts the hold.
-
-- Checkout passes reservation ids; handle the `410 reservation expired`
-
-rejection gracefully.
-
-- **Deliberately underspecified:** what should happen when a reservation
-
-expires while the user is still in the app (or mid-checkout)? Decide the
-
-product behaviour yourself, implement it, and justify the decision in
-
-`solutions.md`. There is no single right answer — there are wrong ones.
-
 #### F-3 Implementation
 
-#### Reservation expires handling
+Stock reservations are implemented by separating cart state, reservation/business logic, and UI state.
 
-Stock reservations are implemented by separating cart state, reservation/business logic, and UI state:
+The flow is:
 
-Deal details / Cart UI
-        ↓
-CartController
-        ↓
-CartService
-        ↓
-OrderRepo
-        ↓
-FakeApiService
-        ↓
-reservation API
-Reservation lifecycle
+Deal details / Cart UI → CartController → CartService → OrderRepo → FakeApiService → Reservation API
+
+##### Reservation lifecycle
 
 Adding a deal to the bag immediately updates the local cart so the UI responds without waiting for the network request.
 
 The app then attempts to reserve the requested quantity.
 
-Add to bag
-    ↓
-Add item locally
-    ↓
-Mark as "reserving"
-    ↓
-Request reservation
-    ↓
-┌─────────────────────┐
-│ Reservation result  │
-└─────────────────────┘
-       ↓          ↓
-   success      failure
-       ↓          ↓
-   reserved    rollback
-       ↓          ↓
-show countdown  remove item
+The reservation flow is:
+
+1. Add the item locally.
+2. Mark the item as `reserving`.
+3. Request a reservation from the backend.
+4. If the reservation succeeds, store the reservation ID and expiration time and mark the item as `reserved`.
+5. If the reservation fails, roll the optimistic change back and remove the item from the bag.
+6. Display a clear, non-technical error message to the user.
 
 If the reservation succeeds, the returned reservation ID and expiration time are stored on the cart item.
 
-If the reservation fails, the optimistic cart change is rolled back and the user receives a clear, non-technical error message rather than an API error.
+If the reservation fails, the optimistic cart change is rolled back rather than leaving an item in the bag that is not actually reserved.
 
 ##### Reservation countdown
 
@@ -519,126 +426,91 @@ Each reserved cart item displays the remaining reservation time.
 
 Reservations are held for 5 minutes.
 
-A lightweight timer in CartController increments a reactive reservationTick every second. Countdown widgets listen to this value and recalculate the remaining time locally.
+A lightweight timer in `CartController` increments the reactive `reservationTick` every second. Countdown widgets listen to this value and recalculate the remaining time locally.
 
 The timer does not make a network request every second.
 
-reservationTick++
-        ↓
-countdown widget rebuilds
-        ↓
-calculate expiresAt - DateTime.now()
-        ↓
-display remaining time
+The countdown flow is:
 
-When the expiration time is reached, the cart service changes the item's state to expired.
+1. `reservationTick` increments every second.
+2. The countdown widget rebuilds.
+3. The widget calculates the difference between `expiresAt` and `DateTime.now()`.
+4. The remaining reservation time is displayed.
+5. When the expiration time is reached, the cart service changes the item's state to `expired`.
 
 ##### Quantity changes
 
 Increasing or decreasing the quantity must keep the server-side reservation consistent with the cart.
 
-Because the backend does not provide a dedicated adjustReservation operation, quantity changes are implemented by releasing the existing reservation and requesting a new reservation for the updated quantity.
+Because the backend does not provide a dedicated `adjustReservation` operation, quantity changes are implemented by releasing the existing reservation and requesting a new reservation for the updated quantity.
 
-Change quantity
-      ↓
-release existing reservation
-      ↓
-reserve updated quantity
-      ↓
-update reservation ID
-      ↓
-update expiration time
+The quantity change flow is:
 
-The UI remains responsive during this process and the quantity controls are temporarily disabled while a reservation operation is in progress.
+1. Release the existing reservation.
+2. Request a new reservation for the updated quantity.
+3. If successful, update the reservation ID and expiration time.
+4. If unsuccessful, reconcile the cart item with the reservation failure.
+
+The UI remains responsive during this process, and the quantity controls are temporarily disabled while a reservation operation is in progress.
 
 ##### Removing an item
 
-When an item with an active reservation is removed:
+When an item with an active reservation is removed, the item is removed from the local bag immediately and its reservation is released through the backend.
 
-Remove item
-    ↓
-remove from local bag
-    ↓
-release reservation
+The removal flow is:
+
+1. Remove the item from the local bag.
+2. Release the associated reservation.
 
 The local removal happens immediately so the UI responds without waiting for the release request.
 
-Reservation expiration
+##### Reservation expiration
 
-When a reservation expires while the user is still in the app, the item remains in the bag but is marked as expired.
+When a reservation expires while the user is still in the app, the item remains in the bag but is marked as `expired`.
 
-The user is shown the expired state with two options:
+The user is shown the expired state and can either reserve the item again or remove it.
 
-Reservation expired
-        ↓
- ┌───────────────┐
- │               │
-Reserve again   Remove
- │
- ↓
-request new reservation
-        ↓
- ┌───────────────┐
- │               │
-success        failure
- │               │
- ↓               ↓
-reserved       remain expired
+If the user chooses to reserve again, the app requests a new reservation. If successful, the reservation ID and expiration time are updated and the item returns to the `reserved` state.
+
+If the new reservation fails, the item remains in the `expired` state.
 
 An expired item cannot be checked out until a new reservation has been successfully obtained.
 
-This avoids silently removing something the user may still want while ensuring that checkout can never proceed using an expired reservation.
+This avoids silently removing an item the user may still want while ensuring that checkout cannot proceed using stock that is no longer reserved.
 
 ##### Checkout
 
-Checkout only becomes available when all items in the bag have valid reservations.
+Checkout is only available when all items in the bag have valid reservations.
 
-The checkout request includes the reservation IDs associated with the cart items.
+Before checkout, the app checks that every cart item has a valid reservation. If any item is expired, failed, timed out, or otherwise does not have a valid reservation, checkout remains disabled and the user must resolve the affected item first.
 
-Bag
- ↓
-Check all reservations
- ↓
-All valid?
- ├── No → Disable checkout
- │
- └── Yes
-      ↓
-   Checkout
-      ↓
-reservation IDs sent to backend
+When checkout is performed, the reservation IDs associated with the cart items are passed to the backend.
 
-If the backend responds with 410 Reservation Expired, the affected reservation state is reconciled with the local cart and checkout is stopped.
-
-The user is then given the opportunity to reserve the item again rather than receiving a technical HTTP error.
+If the backend responds with `410 Reservation Expired`, the local reservation state is reconciled, checkout is stopped, and the user is given the opportunity to reserve the affected item again instead of receiving a technical HTTP error.
 
 ##### Optimistic UI and rollback
 
 The implementation deliberately uses optimistic UI for cart operations because waiting for the reservation API before updating the bag would make normal interactions feel unnecessarily slow.
 
-The important distinction is that optimistic UI does not mean assuming the operation will succeed.
+Optimistic UI does not assume that the operation will succeed. Instead, the local state is updated immediately and then reconciled with the backend result.
 
-User action
-    ↓
-Update local UI immediately
-    ↓
-Perform server operation
-    ↓
-Reconcile result
-   ↙       ↘
-success   failure
-  ↓          ↓
-keep       rollback
+The flow is:
+
+1. The user performs an action.
+2. The local UI is updated immediately.
+3. The backend operation is performed.
+4. If it succeeds, the optimistic state is kept and updated with the server response where necessary.
+5. If it fails, the local state is rolled back or changed to the appropriate failure state.
 
 This provides immediate feedback while still maintaining consistency with the backend.
 
-#### Product decision: expired reservations
+##### Product decision: expired reservations
 
 The reservation expiration behavior was deliberately chosen because expiration does not necessarily mean that the user no longer wants the deal.
 
 Silently removing an expired item could cause the user to lose an item they intentionally added to the bag. Instead, the item remains visible and clearly indicates that its stock is no longer being held.
 
-The user must explicitly reserve again before checkout can continue.
+The user must explicitly reserve the item again before checkout can continue.
 
 This provides a balance between preserving user intent and preventing invalid checkout attempts. It also makes the reservation state visible rather than silently changing the contents of the user's bag.
 

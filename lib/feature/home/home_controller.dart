@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
@@ -16,6 +18,9 @@ class HomeController extends GetxController {
   final isLoading = true.obs;
   final todayOnly = false.obs;
   final scrollOffset = 0.0.obs;
+  final flashDealTick = 0.obs;
+
+  Timer? _flashDealTimer;
 
   final scrollController = ScrollController();
   final refreshController = RefreshController();
@@ -33,11 +38,23 @@ class HomeController extends GetxController {
   void onInit() {
     super.onInit();
     scrollController.addListener(_onScroll);
+    _startFlashDealTimer();
     _initialLoad();
   }
 
   void _onScroll() {
     scrollOffset.value = scrollController.offset;
+  }
+
+  void _startFlashDealTimer() {
+    _flashDealTimer?.cancel();
+
+    _flashDealTimer = Timer.periodic(
+      const Duration(seconds: 1),
+      (_) {
+        flashDealTick.value++;
+      },
+    );
   }
 
   Future<void> _initialLoad() async {
@@ -112,6 +129,7 @@ class HomeController extends GetxController {
 
   @override
   void onClose() {
+    _flashDealTimer?.cancel();
     scrollController.dispose();
     refreshController.dispose();
     super.onClose();

@@ -2,13 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import 'package:rescu/app_config.dart';
+import 'package:rescu/feature/home/widget/flash_deal_countdown.dart';
 import 'package:rescu/feature/shared_widget/the_network_image.dart';
 import 'package:rescu/model/deal_model.dart';
 import 'package:rescu/routes/routes.dart';
 
-import 'flash_deal_card_controller.dart';
-
-class FlashDealCard extends StatefulWidget {
+class FlashDealCard extends StatelessWidget {
   final DealModel deal;
 
   const FlashDealCard({
@@ -17,36 +16,7 @@ class FlashDealCard extends StatefulWidget {
   });
 
   @override
-  State<FlashDealCard> createState() => _FlashDealCardState();
-}
-
-class _FlashDealCardState extends State<FlashDealCard> {
-  late final String _tag;
-
-  late final FlashDealCardController controller;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _tag = 'flash-deal-${widget.deal.id}';
-
-    controller = Get.put(
-      FlashDealCardController(deal: widget.deal),
-      tag: _tag,
-    );
-  }
-
-  @override
-  void dispose() {
-    Get.delete<FlashDealCardController>(tag: _tag);
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final deal = widget.deal;
-
     return SizedBox(
       width: 200,
       child: Card(
@@ -113,15 +83,8 @@ class _FlashDealCardState extends State<FlashDealCard> {
                             color: Colors.red.shade50,
                             borderRadius: BorderRadius.circular(4),
                           ),
-                          child: Obx(
-                            () => Text(
-                              controller.countdown.value,
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.red.shade700,
-                              ),
-                            ),
+                          child: FlashDealCountdown(
+                            deal: deal,
                           ),
                         ),
                       ],

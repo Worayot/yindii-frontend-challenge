@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:get/get.dart';
 
 import '../../model/deal_model.dart';
@@ -24,6 +26,10 @@ class DealDetailsController extends GetxController {
   final _quantityLeft = RxnInt();
   int? get quantityLeft => _quantityLeft.value;
 
+  final countdown = '--:--'.obs;
+  Timer? _timer;
+  bool get isFlashSale => deal.value?.flashSaleEndsAt != null;
+
   @override
   void onInit() {
     super.onInit();
@@ -31,12 +37,40 @@ class DealDetailsController extends GetxController {
     final argument = Get.arguments;
 
     if (argument is DealModel) {
-      // Home navigation: model already exists.
       deal.value = argument;
       _onDealLoaded(argument);
     } else {
-      // Deep link: only ID is available.
       _loadDealFromDeepLink();
+    }
+  }
+
+  void _updateCountdown() {
+    final endsAt = deal.value?.flashSaleEndsAt;
+
+    if (endsAt == null) {
+      countdown.value = '--:--';
+      return;
+    }
+
+    final remaining = endsAt.difference(DateTime.now());
+
+    if (remaining <= Duration.zero) {
+      countdown.value = '00:00';
+      _timer?.cancel();
+      return;
+    }
+
+    final hours = remaining.inHours;
+    final minutes = remaining.inMinutes.remainder(60);
+    final seconds = remaining.inSeconds.remainder(60);
+
+    if (hours > 0) {
+      countdown.value = '${hours.toString().padLeft(2, '0')}:'
+          '${minutes.toString().padLeft(2, '0')}:'
+          '${seconds.toString().padLeft(2, '0')}';
+    } else {
+      countdown.value = '${minutes.toString().padLeft(2, '0')}:'
+          '${seconds.toString().padLeft(2, '0')}';
     }
   }
 
@@ -68,12 +102,32 @@ class DealDetailsController extends GetxController {
       (_) => _recheckAvailability(),
     );
 
+    _startCountdown(loadedDeal);
+
     isLoading.value = false;
+  }
+
+  void _startCountdown(DealModel deal) {
+    final endsAt = deal.flashSaleEndsAt;
+
+    if (endsAt == null) {
+      countdown.value = '--:--';
+      return;
+    }
+
+    _updateCountdown();
+
+    _timer?.cancel();
+    _timer = Timer.periodic(
+      const Duration(seconds: 1),
+      (_) => _updateCountdown(),
+    );
   }
 
   @override
   void onClose() {
     _cartWorker?.dispose();
+    _timer?.cancel();
     super.onClose();
   }
 

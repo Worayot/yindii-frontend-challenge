@@ -28,6 +28,8 @@ class DealDetailsScreen extends GetView<DealDetailsController> {
         );
       }
 
+      final isFlashSale = controller.isFlashSale;
+
       return Scaffold(
         body: CustomScrollView(
           slivers: [
@@ -61,6 +63,17 @@ class DealDetailsScreen extends GetView<DealDetailsController> {
                             )),
                       ],
                     ),
+                    if (isFlashSale)
+                      Obx(
+                        () => Text(
+                          controller.countdown.value,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.red.shade700,
+                          ),
+                        ),
+                      ),
                     const SizedBox(height: 16),
                     Container(
                       padding: const EdgeInsets.all(12),

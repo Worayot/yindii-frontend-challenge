@@ -223,8 +223,6 @@ It does not provide a DealModel, causing Get.arguments to be null and the cast t
 
 #### Solution
 
-Support both navigation sources without unnecessary network requests:
-
 Check Get.arguments for an existing DealModel.
 If a DealModel is provided from the Home page, use it directly without fetching the deal again.
 If no DealModel is provided, treat the navigation as a deep link.
@@ -236,7 +234,6 @@ Build the normal deal details page after the deal has loaded.
 Dispose the cart worker when the details controller is closed to prevent closed deal pages from continuing to trigger availability requests.
 
 The deal details page can therefore be opened from either the Home page or a deep link while avoiding an unnecessary initial fetch when the DealModel is already available
----
 
 ## Part B — Features
 
@@ -257,8 +254,6 @@ Requirements:
   scoped to the text that actually changes — not whole cards, not the whole
   list.
 
-#### Solution
-
 ### F-2 · Impression tracking
 
 Product wants view analytics on deal cards. Using `AnalyticsService`:
@@ -274,8 +269,6 @@ Product wants view analytics on deal cards. Using `AnalyticsService`:
 - Scrolling performance must not regress.
 - The `visibility_detector` package is already in `pubspec.yaml`; using it is
   allowed but not required.
-
-#### Solution
 
 ### F-3 · Stock reservations with optimistic UI
 
@@ -298,5 +291,3 @@ Build reservation support into the bag:
   expires while the user is still in the app (or mid-checkout)? Decide the
   product behaviour yourself, implement it, and justify the decision in
   `solutions.md`. There is no single right answer — there are wrong ones.
-
-#### Solution
